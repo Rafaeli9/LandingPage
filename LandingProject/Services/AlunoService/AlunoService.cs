@@ -32,11 +32,9 @@ namespace LandingProject.Services.AlunoService
                     return serviceResponse;
                 }
 
-                // Verifica o último aluno para gerar o CódigoMatricula
                 var ultimoAluno = await _context.Alunos.OrderByDescending(a => a.AlunoId).FirstOrDefaultAsync();
                 var codigoMatricula = (ultimoAluno != null ? ultimoAluno.AlunoId + 1 : 1);
 
-                // Cria ou busca o Curso no banco de dados
                 var curso = await _context.Cursos.FirstOrDefaultAsync(c => c.Descricao == aluno.Curso.Descricao);
                 if (curso == null)
                 {
@@ -45,7 +43,6 @@ namespace LandingProject.Services.AlunoService
                     await _context.SaveChangesAsync(); // Garante que CursoId seja gerado
                 }
 
-                // Cria ou busca a Turma no banco de dados
                 var turma = await _context.Turmas.FirstOrDefaultAsync(t => t.Descricao == aluno.Turma.Descricao);
                 if (turma == null)
                 {
@@ -54,7 +51,6 @@ namespace LandingProject.Services.AlunoService
                     await _context.SaveChangesAsync(); // Garante que TurmaId seja gerado
                 }
 
-                // Cria o aluno com os IDs do curso e turma
                 var novoAluno = new AlunoModel
                 {
                     Nome = aluno.Nome,
