@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
+          crossorigin="anonymous" />
+    <title>Consulta de Leads</title>
+</head>
+<body>
+    <div class="d-grid">
+        <a href="/" class="btn btn-info btn-lg" role="button">Home</a>
+    </div>
+    <div class="container mt-5">
+        <!-- Header -->
+        <header class="text-center mb-4">
+            <h1 class="display-5">Consulta de Leads</h1>
+            <p class="lead">Use os filtros abaixo para buscar os leads cadastrados.</p>
+        </header>
+
+        <!-- Filtros -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <input type="text"
+                       id="filterName"
+                       class="form-control"
+                       placeholder="Filtrar por Nome" />
+            </div>
+            <div class="col-md-4">
+                <input type="email"
+                       id="filterEmail"
+                       class="form-control"
+                       placeholder="Filtrar por E-mail" />
+            </div>
+            <div class="col-md-4">
+                <input type="text" 
+                       id="filterCourse" 
+                       class="form-control" 
+                       placeholder="Filtrar por Curso" />
+            </div>
+        </div>
+
+        <!-- Botão para buscar -->
+        <div class="row mb-4">
+            <div class="col-md-12 text-center">
+                <button id="searchButton" class="btn btn-primary">Buscar</button>
+                <button id="clearFiltersButton" class="btn btn-secondary">Limpar Filtros</button>
+            </div>
+        </div>
+
+        <!-- Tabela de Leads -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-primary">
+                    <tr>
+                        <th>Nome</th>
+                        <th>E-mail</th>
+                        <th>Telefone</th>
+                        <th>Curso de Interesse</th>
+                    </tr>
+                </thead>
+                <tbody id="leadsTable">
+                    <!-- Dados serão preenchidos via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Script para Filtros -->
+    <script>
+        const filterName = document.getElementById("filterName");
+        const filterEmail = document.getElementById("filterEmail");
+        const filterCourse = document.getElementById("filterCourse");
+        const leadsTable = document.getElementById("leadsTable");
+        const searchButton = document.getElementById("searchButton");
+        const clearFiltersButton = document.getElementById("clearFiltersButton");
+
+        // Função para buscar os leads no banco
+        async function getLeads() {
+            const nome = filterName.value || '';
+            const email = filterEmail.value || '';
+            const curso = filterCourse.value || '';
+
+            const queryParams = new URLSearchParams({
+                nome,
+                email,
+                curso
+            }).toString();
+
+            const response = await fetch(`/api/filtro?${queryParams}`);
+            const data = await response.json();
+            displayLeads(data.dados); // Supondo que a resposta tenha o formato correto
+        }
+
+        // Função para buscar todos os leads
+        async function getAllLeads() {
+            const response = await fetch('/api/lead');
+            const data = await response.json();
+            displayLeads(data.dados); // Supondo que a resposta tenha o formato correto
+        }
+
+        // Função para exibir os leads na tabela
+        function displayLeads(leads) {
+            leadsTable.innerHTML = '';
+            if (!leads || leads.length === 0) {
+                leadsTable.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">Nenhum lead encontrado.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            leads.forEach(lead => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${lead.nome}</td>
+                    <td>${lead.email}</td>
+                    <td>${lead.telefone}</td>
+                    <td>${lead.curso}</td>
+                `;
+                leadsTable.appendChild(row);
+            });
+        }
+
+        // Eventos
+        searchButton.addEventListener("click", getLeads);
+
+        clearFiltersButton.addEventListener("click", () => {
+            filterName.value = '';
+            filterEmail.value = '';
+            filterCourse.value = '';
+            getAllLeads();
+        });
+
+        // Inicializa a tabela ao carregar a página
+        getAllLeads();
+    </script>
+</body>
+</html>
+

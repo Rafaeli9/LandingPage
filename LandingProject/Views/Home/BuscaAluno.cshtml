@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página de Busca</title>
+    <!-- Link para o Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="d-grid">
+        <a href="/" class="btn btn-info btn-lg" role="button">Home</a>
+    </div>
+    <div class="container mt-5">
+        <h2>Buscar Alunos</h2>
+        <form id="searchForm">
+            <div class="row">
+                <!-- Campo Id -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="id" class="form-label">ID</label>
+                        <input type="text" class="form-control" id="id" placeholder="Digite o ID">
+                    </div>
+                </div>
+                <!-- Campo Código de Matrícula -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="codigoMatricula" class="form-label">Código de Matrícula</label>
+                        <input type="text" class="form-control" id="codigoMatricula" placeholder="Digite o Código de Matrícula">
+                    </div>
+                </div>
+                <!-- Campo Nome -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="nome" placeholder="Digite o Nome">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <!-- Campo Telefone -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" placeholder="Digite o Telefone">
+                    </div>
+                </div>
+                <!-- Campo Email -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" placeholder="Digite o Email">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="cursoId" class="form-label">Curso</label>
+                    <input type="curso" class="form-control" id="cursoId" placeholder="Digite o curso">
+                </div>
+                <div class="mb-3">
+                    <label for="turmaId" class="form-label">Turma</label>
+                    <input type="turma" class="form-control" id="turmaId" placeholder="Digite a turma">
+
+                </div>
+                <!-- Campo Data de Cadastro -->
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label for="dataCadastro" class="form-label">Data de Cadastro</label>
+                        <input type="date" class="form-control" id="dataCadastro">
+                    </div>
+                </div>
+            </div>
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-primary">Buscar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Script para buscar e exibir os dados -->
+    <script>
+                document.getElementById("searchForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            // Obtém o valor do campo 'id'
+            const id = document.getElementById("id").value;
+
+            // Montando os parâmetros de consulta
+            const queryParams = new URLSearchParams({ id }).toString();
+
+            // Fazendo a requisição para o backend
+            const response = await fetch(`/api/Aluno?${queryParams}`);
+            const data = await response.json();
+
+            if (data.sucesso && data.dados.length > 0) {
+                // Encontrar o aluno que corresponde ao id fornecido
+                const alunoEncontrado = data.dados.find(aluno => aluno.alunoId === parseInt(id));
+
+                if (alunoEncontrado) {
+                    // Requisições adicionais para curso e turma
+                    const buscaCurso = await fetch(`/api/Aluno/cursos/${alunoEncontrado.cursoId}`);
+                    const dataCurso = await buscaCurso.json();
+
+                    const buscaTurma = await fetch(`/api/Aluno/cursos/${alunoEncontrado.turmaId}/turmas`);
+                    const dataTurma = await buscaTurma.json();
+
+                    // Preenche os campos do formulário com os dados do aluno encontrado
+                    preencherFormulario(alunoEncontrado, dataCurso, dataTurma);
+                } else {
+                    // Se o aluno não for encontrado, exibe uma mensagem de erro ou um aviso
+                    alert("Aluno não encontrado.");
+                }
+            } else {
+                // Se não houver sucesso, exibe uma mensagem de erro ou um aviso
+                alert("Aluno não encontrado.");
+            }
+        });
+
+                function preencherFormulario(aluno, curso, turma) {
+            const campos = {
+                id: "alunoId",
+                codigoMatricula: "codigoMatricula",
+                nome: "nome",
+                telefone: "telefone",
+                email: "email",
+                cursoId: "cursoId",
+                turmaId: "turmaId",
+                dataCadastro: "dataCadastro"
+            };
+
+            // Preenchendo os campos do formulário com os dados do aluno
+            for (const campoFormulario in campos) {
+                const campoAluno = campos[campoFormulario];
+                const input = document.getElementById(campoFormulario);
+
+                if (input && aluno[campoAluno] !== undefined) {
+                    // Preenchendo a data de cadastro
+                    if (campoFormulario === 'dataCadastro') {
+                        input.value = aluno[campoAluno].split("T")[0]; // Formato da data
+                    }
+                    // Preenchendo o nome do curso
+                    else if (campoFormulario === 'cursoId' && curso && curso.dados && curso.dados.descricao) {
+                        input.value = curso.dados.descricao;  // Preenche o nome do curso
+                    }
+                    // Preenchendo o nome da turma
+                    else if (campoFormulario === 'turmaId' && turma && Array.isArray(turma.dados)) {
+                        // Encontrando a turma que corresponde ao turmaId do aluno
+                        const turmaEncontrada = turma.dados.find(t => t.turmaId === aluno.turmaId);
+                        if (turmaEncontrada) {
+                            input.value = turmaEncontrada.descricao;  // Preenche o nome da turma
+                        }
+                    }
+                    // Preenchendo os outros campos
+                    else {
+                        input.value = aluno[campoAluno];
+                    }
+                }
+            }
+        }
+
+
+        // Função para preencher o formulário com os dados do aluno
+        // function preencherFormulario(aluno, curso, turma) {
+        //     const campos = {
+        //         id: "alunoId",
+        //         codigoMatricula: "codigoMatricula",
+        //         nome: "nome",
+        //         telefone: "telefone",
+        //         email: "email",
+        //         cursoId: "cursoId",
+        //         turmaId: "turmaId",
+        //         dataCadastro: "dataCadastro",
+        //         cursoNome: "cursoNome",   Novo campo para o nome do curso
+        //         turmaNome: "turmaNome"    Novo campo para o nome da turma
+        //     };
+
+        //     for (const campoFormulario in campos) {
+        //         const campoAluno = campos[campoFormulario];
+        //         const input = document.getElementById(campoFormulario);
+
+        //         if (input && aluno[campoAluno] !== undefined) {
+        //             if (campoFormulario === 'dataCadastro') {
+        //                 input.value = aluno[campoAluno].split("T")[0]; Formato da data
+        //             } else if (campoFormulario === 'cursoNome' && curso && curso.nome) {
+        //                 input.value = curso.nome;  Preenche o nome do curso
+        //             } else if (campoFormulario === 'turmaNome' && turma && turma.nome) {
+        //                 input.value = turma.nome;  Preenche o nome da turma
+        //             } else {
+        //                 input.value = aluno[campoAluno];
+        //             }
+        //         }
+        //     }
+        // }
+
+
+
+
+    </script>
+
+    <!-- Script do Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
+

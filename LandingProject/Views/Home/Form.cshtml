@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Landing Page</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <div class="d-grid">
+        <a href="/" class="btn btn-info btn-lg" role="button">Home</a>
+    </div>
+
+    <div class="container mt-5">
+        <header class="text-center mb-4">
+            <h1 class="display-4">Bem-vindo à Nossa Landing Page!</h1>
+            <p class="lead">Cadastre-se agora para receber nossas novidades.</p>
+        </header>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form id="leadForm" class="p-4 border rounded shadow">
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="nome" name="nome" placeholder="Digite seu nome completo" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Digite seu e-mail" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="tel" class="form-control" id="telefone" name="telefone" placeholder="(XX) XXXXX-XXXX" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="curso" class="form-label">Curso</label>
+                        <select class="form-select" id="curso" name="curso" onchange="onCursoChange(this.value)">
+                            <option value="">Selecione um curso</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="turma" class="form-label">Turma</label>
+                        <select class="form-select" id="turma" name="turma">
+                            <option value="">Selecione uma turma</option>
+                        </select>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitLead">Enviar</button>
+                    </div>
+                    <div class="d-grid mt-3">
+                        <button type="button" class="btn btn-secondary btn-lg" id="submitMatricula">Matricular</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Script para envio do formulário -->
+    <script>
+        // Função para carregar cursos ao carregar a página
+        async function loadCursos() {
+            const cursoSelect = document.getElementById('curso');
+            cursoSelect.innerHTML = '<option value="">Carregando cursos...</option>'; // Feedback de carregamento
+
+            try {
+                const response = await fetch('/api/Aluno/cursos');
+                if (!response.ok) throw new Error('Erro ao carregar cursos.');
+
+                const cursos = await response.json();
+                cursoSelect.innerHTML = '<option value="">Selecione um curso</option>'; // Limpa a opção "Carregando..."
+
+                cursos.dados.forEach(curso => {
+                    const option = document.createElement('option');
+                    option.value = curso.cursoId; // Assumindo que "cursoId" é o identificador do curso
+                    option.textContent = curso.descricao; // Exibe o nome do curso
+                    cursoSelect.appendChild(option);
+                });
+
+                // Caso já exista um curso selecionado, chama a função para carregar as turmas automaticamente
+                const cursoSelecionado = cursoSelect.value;
+                if (cursoSelecionado) {
+                    onCursoChange(cursoSelecionado);
+                }
+            } catch (error) {
+                cursoSelect.innerHTML = '<option value="">Erro ao carregar cursos</option>';
+                console.error(error);
+            }
+        }
+
+        // Função chamada quando um curso é selecionado
+        async function onCursoChange(cursoId) {
+            const turmaSelect = document.getElementById('turma');
+            turmaSelect.innerHTML = '<option value="">Carregando turmas...</option>'; // Feedback de carregamento
+
+            if (!cursoId) {
+                turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/Aluno/cursos/${cursoId}/turmas`);
+                if (!response.ok) throw new Error('Erro ao buscar turmas.');
+
+                const turmas = await response.json();
+
+                if (turmas.dados.length === 0) {
+                    turmaSelect.innerHTML = '<option value="">Nenhuma turma encontrada</option>';
+                } else {
+                    turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>';
+                    turmas.dados.forEach(turma => {
+                        const option = document.createElement('option');
+                        option.value = turma.turmaId; // Assumindo que "turmaId" é o identificador da turma
+                        option.textContent = turma.descricao; // Exibe a descrição da turma
+                        turmaSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                turmaSelect.innerHTML = '<option value="">Erro ao carregar turmas</option>';
+                console.error(error);
+            }
+        }
+
+        // Chama a função para carregar os cursos assim que a página for carregada
+        document.addEventListener('DOMContentLoaded', loadCursos);
+
+        // Função para envio do formulário de lead
+        document.getElementById('leadForm').addEventListener('submit', async function (e) {
+            e.preventDefault(); // Evita o comportamento padrão do formulário
+
+            const formData = new FormData(e.target);
+            const data = {
+                Nome: formData.get('nome'),
+                Telefone: formData.get('telefone'),
+                Email: formData.get('email'),
+                Curso: formData.get('curso'),
+                Turma: formData.get("turma")
+            };
+
+            try {
+                const response = await fetch('/api/Lead', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cadastro realizado com sucesso!',
+                        text: 'Seu lead foi cadastrado com sucesso!',
+                        confirmButtonText: 'Ok',
+                    }).then(() => {
+                        window.location.href = '/';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro no cadastro',
+                        text: result.message || 'Não foi possível processar o cadastro.',
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro inesperado',
+                    text: 'Ocorreu um erro inesperado. Por favor, tente novamente.',
+                });
+            }
+        });
+
+        // Função para envio do formulário de matrícula
+        document.getElementById('submitMatricula').addEventListener('click', async function () {
+            const formData = new FormData(document.getElementById('leadForm'));
+            const alunoData = {
+                Nome: formData.get('nome'),
+                Telefone: formData.get('telefone'),
+                Email: formData.get('email'),
+                Curso: { Descricao: formData.get('curso') },
+                Turma: { Descricao: "turma" }
+            };
+
+            try {
+                const response = await fetch('/api/Aluno', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(alunoData),
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Matrícula realizada com sucesso!',
+                        text: 'O aluno foi matriculado com sucesso!',
+                        confirmButtonText: 'Ok',
+                    }).then(() => {
+                        window.location.href = '/';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro na matrícula',
+                        text: result.message || 'Não foi possível processar a matrícula.',
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro inesperado',
+                    text: 'Ocorreu um erro inesperado. Por favor, tente novamente.',
+                });
+            }
+        });
+    </script>
+</body>
+</html>
