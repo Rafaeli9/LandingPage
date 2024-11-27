@@ -75,45 +75,36 @@
         </form>
     </div>
 
-    <!-- Script para buscar e exibir os dados -->
+
     <script>
                 document.getElementById("searchForm").addEventListener("submit", async function(event) {
             event.preventDefault();
 
-            // Obtém o valor do campo 'id'
             const id = document.getElementById("id").value;
 
-            // Montando os parâmetros de consulta
             const queryParams = new URLSearchParams({ id }).toString();
 
-            // Fazendo a requisição para o backend
             const response = await fetch(`/api/Aluno?${queryParams}`);
             const data = await response.json();
 
             if (data.sucesso && data.dados.length > 0) {
-                // Encontrar o aluno que corresponde ao id fornecido
                 const alunoEncontrado = data.dados.find(aluno => aluno.alunoId === parseInt(id));
 
                 if (alunoEncontrado) {
-                    // Requisições adicionais para curso e turma
                     const buscaCurso = await fetch(`/api/Aluno/cursos/${alunoEncontrado.cursoId}`);
                     const dataCurso = await buscaCurso.json();
 
                     const buscaTurma = await fetch(`/api/Aluno/cursos/${alunoEncontrado.turmaId}/turmas`);
                     const dataTurma = await buscaTurma.json();
 
-                    // Preenche os campos do formulário com os dados do aluno encontrado
                     preencherFormulario(alunoEncontrado, dataCurso, dataTurma);
                 } else {
-                    // Se o aluno não for encontrado, exibe uma mensagem de erro ou um aviso
                     alert("Aluno não encontrado.");
                 }
             } else {
-                // Se não houver sucesso, exibe uma mensagem de erro ou um aviso
                 alert("Aluno não encontrado.");
             }
         });
-
                 function preencherFormulario(aluno, curso, turma) {
             const campos = {
                 id: "alunoId",
@@ -126,23 +117,18 @@
                 dataCadastro: "dataCadastro"
             };
 
-            // Preenchendo os campos do formulário com os dados do aluno
             for (const campoFormulario in campos) {
                 const campoAluno = campos[campoFormulario];
                 const input = document.getElementById(campoFormulario);
 
                 if (input && aluno[campoAluno] !== undefined) {
-                    // Preenchendo a data de cadastro
                     if (campoFormulario === 'dataCadastro') {
                         input.value = aluno[campoAluno].split("T")[0]; // Formato da data
                     }
-                    // Preenchendo o nome do curso
                     else if (campoFormulario === 'cursoId' && curso && curso.dados && curso.dados.descricao) {
                         input.value = curso.dados.descricao;  // Preenche o nome do curso
                     }
-                    // Preenchendo o nome da turma
                     else if (campoFormulario === 'turmaId' && turma && Array.isArray(turma.dados)) {
-                        // Encontrando a turma que corresponde ao turmaId do aluno
                         const turmaEncontrada = turma.dados.find(t => t.turmaId === aluno.turmaId);
                         if (turmaEncontrada) {
                             input.value = turmaEncontrada.descricao;  // Preenche o nome da turma
@@ -155,44 +141,6 @@
                 }
             }
         }
-
-
-        // Função para preencher o formulário com os dados do aluno
-        // function preencherFormulario(aluno, curso, turma) {
-        //     const campos = {
-        //         id: "alunoId",
-        //         codigoMatricula: "codigoMatricula",
-        //         nome: "nome",
-        //         telefone: "telefone",
-        //         email: "email",
-        //         cursoId: "cursoId",
-        //         turmaId: "turmaId",
-        //         dataCadastro: "dataCadastro",
-        //         cursoNome: "cursoNome",   Novo campo para o nome do curso
-        //         turmaNome: "turmaNome"    Novo campo para o nome da turma
-        //     };
-
-        //     for (const campoFormulario in campos) {
-        //         const campoAluno = campos[campoFormulario];
-        //         const input = document.getElementById(campoFormulario);
-
-        //         if (input && aluno[campoAluno] !== undefined) {
-        //             if (campoFormulario === 'dataCadastro') {
-        //                 input.value = aluno[campoAluno].split("T")[0]; Formato da data
-        //             } else if (campoFormulario === 'cursoNome' && curso && curso.nome) {
-        //                 input.value = curso.nome;  Preenche o nome do curso
-        //             } else if (campoFormulario === 'turmaNome' && turma && turma.nome) {
-        //                 input.value = turma.nome;  Preenche o nome da turma
-        //             } else {
-        //                 input.value = aluno[campoAluno];
-        //             }
-        //         }
-        //     }
-        // }
-
-
-
-
     </script>
 
     <!-- Script do Bootstrap 5 JS -->
