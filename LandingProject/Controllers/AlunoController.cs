@@ -67,37 +67,3 @@ namespace LandingProject.Controllers
 
 
 
-//if (aluno == null || string.IsNullOrWhiteSpace(aluno.CodigoMatricula))
-//{
-//    return BadRequest("O Código de Matrícula é obrigatório.");
-//}
-
-//var novoAluno = new AlunoModel()
-//{
-//    CodigoMatricula = aluno.CodigoMatricula, 
-//    Nome = aluno.Nome,
-//    Telefone = aluno.Telefone,
-//    Email = aluno.Email,
-//    DataCadastro = DateTime.Now 
-//};
-
-//var curso = new CursoModel()
-//{
-//    Descricao = aluno.Curso.Descricao
-//};
-
-//var turma = new TurmaModel()
-//{
-//    Descricao = aluno.Turma.Descricao
-//};
-
-//novoAluno.Cursos = new List<CursoModel> { curso }; 
-//novoAluno.Turmas = new List<TurmaModel> { turma };
-//novoAluno.DataCadastro = DateTime.UtcNow;
-
-
-//_context.Alunos.Add(novoAluno);
-//await _context.SaveChangesAsync();
-
-//return Ok(await _context.Alunos.Include(c => c.Cursos).Include(t => t.Turmas).ToListAsync());
-//return Ok(await _leadInterface.CreateLead(novoLead));
