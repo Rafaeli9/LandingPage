@@ -1,4 +1,6 @@
-Para o projeto foram usados os seguintes pacote:
+## Configurações do Projeto
+
+**Para o projeto foram usados os seguintes pacote:**
 
 microsoft.entityframeworkcore\9.0.0\
 microsoft.entityframeworkcore.design\9.0.0\
@@ -13,13 +15,13 @@ swashbuckle.aspnetcore.swaggerui\7.0.0\
 system.text.json\9.0.0\
 ------------------------------------------------------------------//-------------------------------------------------------------
 
-Configurar o appSettings.json para fazer a conexão com o banco adicionando:
+**Configurar o appSettings.json para fazer a conexão com o banco:**
 
   "ConnectionStrings": {
       "DefaultConnection": "Data source={Conforme banco no SQLServer};database={nome do Banco a ser criado};Trusted_connection=true; Encrypt=false; TrustServerCertificate=true"
   },
 
-Configurar o banco de dados no program.cs
+**Configurar o banco de dados no program.cs**
 
 builder.Services.AddDbContext"<"ApplicationDbContext">" (options =>
 {
@@ -30,7 +32,7 @@ builder.Services.AddDbContext"<"ApplicationDbContext">" (options =>
 
 ------------------------------------------------------------------//-------------------------------------------------------------
 
-Para fazer as migration:
+**Para fazer as migration:**
 
 add-migration {nome da migration}
 
@@ -40,7 +42,7 @@ remove-migration (caso precise remover a migration feita)
 
 ------------------------------------------------------------------//-------------------------------------------------------------
 
-Injeção de dependência no program.cs:
+**Injeção de dependência no program.cs:**
 
 builder.Services.AddScoped<ILeadInterface, LeadService>();
 
@@ -50,7 +52,7 @@ builder.Services.AddScoped<IAlunoInterface, AlunoService>();
 
 ------------------------------------------------------------------//-------------------------------------------------------------
 
-Como sugestão, ao configurar e conectar o banco fazer as querys abaixo para testes:
+**Como sugestão, ao configurar e conectar o banco fazer as querys abaixo para testes:**
 
     INSERT INTO Cursos (Descricao)
     VALUES 
@@ -66,4 +68,4 @@ Como sugestão, ao configurar e conectar o banco fazer as querys abaixo para tes
 
 ------------------------------------------------------------------//-------------------------------------------------------------
 
-Se as imagens não carregarem, colocar a pasta Imagem no wwwRoot
+**Se as imagens não carregarem, colocar a pasta Imagem no wwwRoot**
