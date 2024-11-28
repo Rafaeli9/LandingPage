@@ -1,9 +1,10 @@
-﻿using LandingProject.DataContext;
+using LandingProject.DataContext;
 using LandingProject.DTOs;
 using LandingProject.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace LandingProject.Services.AlunoService
@@ -16,7 +17,6 @@ namespace LandingProject.Services.AlunoService
         {
             _context = context;
         }
-
 
         public async Task<ServiceResponse<List<AlunoModel>>> CreateAluno(AlunoCriacaoDto aluno)
         {
@@ -32,33 +32,38 @@ namespace LandingProject.Services.AlunoService
                     return serviceResponse;
                 }
 
-                var ultimoAluno = await _context.Alunos.OrderByDescending(a => a.AlunoId).FirstOrDefaultAsync();
-                var codigoMatricula = (ultimoAluno != null ? ultimoAluno.AlunoId + 1 : 1);
+                // Gera o código de matrícula
+                var codigoMatricula = await GerarCodigoMatricula();
 
-                var curso = await _context.Cursos.FirstOrDefaultAsync(c => c.Descricao == aluno.Curso.Descricao);
+                // Verifica o curso
+                var curso = await ObterCurso(aluno.Curso.Descricao, aluno.Curso.CursoId);
                 if (curso == null)
                 {
-                    curso = new CursoModel { Descricao = aluno.Curso.Descricao };
-                    _context.Cursos.Add(curso);
-                    await _context.SaveChangesAsync(); // Garante que CursoId seja gerado
+                    serviceResponse.Dados = null;
+                    serviceResponse.Mensagem = "Curso não encontrado.";
+                    serviceResponse.Sucesso = false;
+                    return serviceResponse;
                 }
 
-                var turma = await _context.Turmas.FirstOrDefaultAsync(t => t.Descricao == aluno.Turma.Descricao);
+                // Verifica a turma
+                var turma = await ObterTurma(aluno.Turma.Descricao, curso.CursoId);
                 if (turma == null)
                 {
-                    turma = new TurmaModel { Descricao = aluno.Turma.Descricao };
-                    _context.Turmas.Add(turma);
-                    await _context.SaveChangesAsync(); // Garante que TurmaId seja gerado
+                    serviceResponse.Dados = null;
+                    serviceResponse.Mensagem = "Turma não encontrada para o curso.";
+                    serviceResponse.Sucesso = false;
+                    return serviceResponse;
                 }
 
+                // Cria o aluno e associa o CursoId e o TurmaId
                 var novoAluno = new AlunoModel
                 {
                     Nome = aluno.Nome,
                     Telefone = aluno.Telefone,
                     Email = aluno.Email,
                     CodigoMatricula = codigoMatricula,
-                    CursoId = curso.CursoId, // Associa o CursoId
-                    TurmaId = turma.TurmaId, // Associa o TurmaId
+                    CursoId = curso.CursoId,
+                    TurmaId = turma.TurmaId,
                     DataCadastro = DateTime.UtcNow,
                 };
 
@@ -81,6 +86,27 @@ namespace LandingProject.Services.AlunoService
             }
 
             return serviceResponse;
+        }
+
+        private async Task<int> GerarCodigoMatricula()
+        {
+            var ultimoAluno = await _context.Alunos
+                .OrderByDescending(a => a.AlunoId)
+                .FirstOrDefaultAsync();
+
+            return (ultimoAluno != null ? ultimoAluno.CodigoMatricula + 1 : 1);
+        }
+
+
+        private async Task<CursoModel?> ObterCurso(string descricaoCurso, int cursoId)
+        {
+            return await _context.Cursos.FirstOrDefaultAsync(c => c.Descricao == descricaoCurso && c.CursoId == cursoId);
+        }
+
+        private async Task<TurmaModel?> ObterTurma(string descricaoTurma, int cursoId)
+        {
+            return await _context.Turmas
+                .FirstOrDefaultAsync(t => t.Descricao == descricaoTurma && t.CursoId == cursoId);
         }
 
         public async Task<ServiceResponse<List<AlunoModel>>> GetAlunos()
