@@ -1,4 +1,4 @@
-﻿using LandingProject.Enums;
+
 using LandingProject.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
