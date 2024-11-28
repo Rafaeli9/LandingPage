@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -65,24 +65,27 @@
 
     <!-- Script para envio do formulário -->
     <script>
+        // Função para carregar cursos ao carregar a página
         async function loadCursos() {
             const cursoSelect = document.getElementById('curso');
-            cursoSelect.innerHTML = '<option value="">Carregando cursos...</option>'; // Feedback de carregamento
+            cursoSelect.innerHTML = '<option value="">Carregando cursos...</option>';
 
             try {
                 const response = await fetch('/api/Aluno/cursos');
                 if (!response.ok) throw new Error('Erro ao carregar cursos.');
 
                 const cursos = await response.json();
-                cursoSelect.innerHTML = '<option value="">Selecione um curso</option>'; // Limpa a opção "Carregando..."
+                cursoSelect.innerHTML = '<option value="">Selecione um curso</option>';
 
                 cursos.dados.forEach(curso => {
                     const option = document.createElement('option');
-                    option.value = curso.cursoId; // Assumindo que "cursoId" é o identificador do curso
-                    option.textContent = curso.descricao; // Exibe o nome do curso
+                    option.value = curso.cursoId;
+                     option.dataset.descricao = curso.descricao;
+                    option.textContent = curso.descricao; 
                     cursoSelect.appendChild(option);
                 });
 
+                // Caso já exista um curso selecionado, chama a função para carregar as turmas automaticamente
                 const cursoSelecionado = cursoSelect.value;
                 if (cursoSelecionado) {
                     onCursoChange(cursoSelecionado);
@@ -93,9 +96,10 @@
             }
         }
 
+        // Função chamada quando um curso é selecionado
         async function onCursoChange(cursoId) {
             const turmaSelect = document.getElementById('turma');
-            turmaSelect.innerHTML = '<option value="">Carregando turmas...</option>'; // Feedback de carregamento
+            turmaSelect.innerHTML = '<option value="">Carregando turmas...</option>';
 
             if (!cursoId) {
                 turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>';
@@ -114,8 +118,9 @@
                     turmaSelect.innerHTML = '<option value="">Selecione uma turma</option>';
                     turmas.dados.forEach(turma => {
                         const option = document.createElement('option');
-                        option.value = turma.turmaId; // Assumindo que "turmaId" é o identificador da turma
-                        option.textContent = turma.descricao; // Exibe a descrição da turma
+                        option.value = turma.turmaId;
+                        option.dataset.descricao = turma.descricao;
+                        option.textContent = turma.descricao;
                         turmaSelect.appendChild(option);
                     });
                 }
@@ -125,8 +130,10 @@
             }
         }
 
+        // Chama a função para carregar os cursos assim que a página for carregada
         document.addEventListener('DOMContentLoaded', loadCursos);
 
+        // Função para envio do formulário de lead
         document.getElementById('leadForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -175,14 +182,36 @@
             }
         });
 
+          // Função para envio do formulário de matrícula
         document.getElementById('submitMatricula').addEventListener('click', async function () {
             const formData = new FormData(document.getElementById('leadForm'));
+            const cursoId = formData.get('curso');
+            const turmaId = formData.get('turma');
+
+            if (!cursoId || !turmaId) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos obrigatórios',
+                    text: 'Por favor, selecione um curso e uma turma antes de prosseguir.',
+                });
+                return;
+            }
+
+            const cursoDescricao = document.querySelector(`#curso option[value="${cursoId}"]`)?.dataset.descricao || '';
+            const turmaDescricao = document.querySelector(`#turma option[value="${turmaId}"]`)?.dataset.descricao || '';
+
             const alunoData = {
-                Nome: formData.get('nome'),
-                Telefone: formData.get('telefone'),
-                Email: formData.get('email'),
-                Curso: { Descricao: formData.get('curso') },
-                Turma: { Descricao: "turma" }
+                nome: formData.get('nome'),
+                telefone: formData.get('telefone'),
+                email: formData.get('email'),
+                curso: {
+                    descricao: cursoDescricao,
+                    cursoId: parseInt(cursoId, 10),
+                },
+                turma: {
+                    descricao: turmaDescricao,
+                    turmaId: parseInt(turmaId, 10),
+                },
             };
 
             try {
@@ -209,7 +238,7 @@
                     Swal.fire({
                         icon: 'error',
                         title: 'Erro na matrícula',
-                        text: result.message || 'Não foi possível processar a matrícula.',
+                        text: result.mensagem || 'Não foi possível processar a matrícula.',
                     });
                 }
             } catch (error) {
@@ -218,6 +247,7 @@
                     title: 'Erro inesperado',
                     text: 'Ocorreu um erro inesperado. Por favor, tente novamente.',
                 });
+                console.error(error);
             }
         });
     </script>
