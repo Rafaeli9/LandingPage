@@ -2,6 +2,9 @@
 
 **Para o projeto foram usados os seguintes pacote:**
 
+*Para facilitar a busca tirar as versões do final de cada pacote mencionado e para adicionar pacotes ir no menu do microsoft visual studio em  ferramentas(tool)->Gerenciador de Pacotes NuGet->Gerenciador de Pacotes NuGet para solução...
+
+
 microsoft.entityframeworkcore\9.0.0\
 microsoft.entityframeworkcore.design\9.0.0\
 microsoft.entityframeworkcore.sqlserver\9.0.0\
