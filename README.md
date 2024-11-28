@@ -63,3 +63,7 @@ Como sugestão, ao configurar e conectar o banco fazer as querys abaixo para tes
       ('Turma A', 1), 
       ('Turma B', 2),
       ('Turma C', 3);
+
+------------------------------------------------------------------//-------------------------------------------------------------
+
+Se as imagens não carregarem, colocar a pasta Imagem no wwwRoot
