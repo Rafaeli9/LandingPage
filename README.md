@@ -20,10 +20,13 @@ Configurar o appSettings.json para fazer a conexão com o banco adicionando:
   },
 
 Configurar o banco de dados no program.cs
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+
+builder.Services.AddDbContext"<"ApplicationDbContext">" (options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+
+*(Tirar as aspas "" do < e > do ApplicationDbContext)
 
 ------------------------------------------------------------------//-------------------------------------------------------------
 
