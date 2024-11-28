@@ -47,3 +47,19 @@ builder.Services.AddScoped<ILeadInterface, LeadService>();
 builder.Services.AddScoped<IFiltroInterface, FiltroService>();
 
 builder.Services.AddScoped<IAlunoInterface, AlunoService>();
+
+------------------------------------------------------------------//-------------------------------------------------------------
+
+Como sugestão, ao configurar e conectar o banco fazer as querys abaixo para testes:
+
+    INSERT INTO Cursos (Descricao)
+    VALUES 
+        ('Administração'),
+        ('Ciências Contábeis'),
+        ('Direito');
+
+	INSERT INTO Turmas (Descricao, CursoId) 
+    VALUES 
+      ('Turma A', 1), 
+      ('Turma B', 2),
+      ('Turma C', 3);
